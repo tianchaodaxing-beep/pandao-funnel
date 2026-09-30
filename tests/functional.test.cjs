@@ -1,0 +1,14 @@
+const test=require('node:test');const assert=require('node:assert/strict');const P=require('../planning.js');
+const row={segment:'一',leads:100,contacted:60,quoted:30,won:12,amount:36000};
+test("阶段人数和转化率核对",()=>{const r=P.funnel([row,{segment:'二',leads:80,contacted:40,quoted:20,won:8,amount:24000}]);assert.deepEqual([r.totals.leads,r.totals.contacted,r.totals.quoted,r.totals.won,r.totals.amount,r.totals.overallRate,r.totals.averageOrder],[180,100,50,20,60000,11.11,3000]);});
+test("总体转化按人数合计",()=>{const r=P.funnel([{...row,won:10},{segment:'二',leads:10,contacted:10,quoted:10,won:8,amount:800}]);assert.equal(r.totals.overallRate,16.36);});
+test("全零人数不伪造转化率",()=>{const r=P.funnel([{...row,leads:0,contacted:0,quoted:0,won:0,amount:0}]);assert.equal(r.totals.overallRate,null);assert.equal(r.details[0].winRate,null);assert.equal(r.totals.averageOrder,null);});
+test("全部成交得到百分之百",()=>{const r=P.funnel([{...row,leads:10,contacted:10,quoted:10,won:10}]);assert.equal(r.totals.overallRate,100);});
+test("沟通人数超过线索被拒绝",()=>{assert.throws(()=>P.funnel([{...row,contacted:101}]),/逐级不增/);});
+test("报价人数超过沟通被拒绝",()=>{assert.throws(()=>P.funnel([{...row,quoted:61}]),/逐级不增/);});
+test("成交人数超过报价被拒绝",()=>{assert.throws(()=>P.funnel([{...row,won:31}]),/逐级不增/);});
+test("小数人数被拒绝",()=>{assert.throws(()=>P.funnel([{...row,won:1.5}]),/整数/);});
+test("无成交但有金额被拒绝",()=>{assert.throws(()=>P.funnel([{...row,won:0}]),/金额须为0/);});
+test("重复分组被拒绝",()=>{assert.throws(()=>P.funnel([row,row]),/重复/);});
+test("负成交金额被拒绝",()=>{assert.throws(()=>P.funnel([{...row,amount:-1}]));});
+test("缺失阶段人数被拒绝",()=>{assert.throws(()=>P.funnel([{...row,quoted:''}]),/请填写/);});

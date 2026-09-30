@@ -1,0 +1,9 @@
+(function(){
+  "use strict";
+  const U=Pandao,E=ToolEditor,P=Planning,percent=n=>n===null?"—":n.toFixed(2)+"%";
+  E.workbench({key:"funnel",title:"客户转化分析器",icon:"▽",category:"销售管理",description:"按同一统计范围录入客户阶段人数，比较转化与成交金额。",repo:"https://github.com/tianchaodaxing-beep/pandao-funnel",inputTitle:"客户阶段资料",outputTitle:"客户转化",columns:[{label:"统计分组",key:"segment"},{label:"线索人数",key:"leads",type:"number",default:0},{label:"已沟通人数",key:"contacted",type:"number",default:0},{label:"已报价人数",key:"quoted",type:"number",default:0},{label:"成交人数",key:"won",type:"number",default:0},{label:"成交金额",key:"amount",type:"number",default:0}],examples:[{segment:"演示服务业务",leads:100,contacted:60,quoted:30,won:12,amount:36000},{segment:"演示贸易业务",leads:80,contacted:40,quoted:20,won:8,amount:24000}],parameters:[["币种","currency","人民币"]],calculateLabel:"分析客户转化",exportLabel:"导出转化分析",compute:rows=>P.funnel(rows),export:(v,p)=>v.details.map(r=>({币种:p.currency,统计分组:r.segment,线索人数:r.leads,已沟通人数:r.contacted,已报价人数:r.quoted,成交人数:r.won,成交金额:r.amount,"沟通转化率（%）":r.contactRate??"","报价转化率（%）":r.quoteRate??"","成交转化率（%）":r.winRate??"","整体转化率（%）":r.overallRate??""})),view:(v,p)=>[
+    U.metrics([["整体转化率",percent(v.totals.overallRate),""],["成交人数",v.totals.won,"人"],["成交金额",U.money(v.totals.amount),p.currency]]),
+    U.h("div",{class:"funnel"},[["线索",v.totals.leads],["已沟通",v.totals.contacted],["已报价",v.totals.quoted],["成交",v.totals.won]].map(([label,count])=>U.h("div",{class:"funnel-stage",style:"width:"+Math.max(40,v.totals.leads?count/v.totals.leads*100:40)+"%"},[U.h("span",{text:label}),U.h("strong",{text:count})]))),
+    E.heading("分组比较"),E.table([{label:"分组",key:"segment"},{label:"线索",key:"leads",number:true},{label:"成交",key:"won",number:true},{label:"整体转化率",value:r=>percent(r.overallRate),number:true},{label:"成交金额",value:r=>U.money(r.amount),number:true}],v.details)
+  ]});
+})();

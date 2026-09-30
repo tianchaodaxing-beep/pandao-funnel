@@ -1,0 +1,10 @@
+{
+  "name": "pandao-funnel",
+  "version": "1.0.2",
+  "private": true,
+  "description": "按同一统计范围录入客户阶段人数，比较转化与成交金额。",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  }
+}
